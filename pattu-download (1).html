@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pattu</title>
+<style>
+:root{--bg:#070a1c;--fg:#eef1ff;--dim:#9aa3d0;--card:rgba(18,22,52,.55);--line:rgba(255,255,255,.14);--g:linear-gradient(90deg,#4f8cff,#a56bff,#ff6b9d);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#070a1c}}
+:root[data-theme="dark"]{--bg:#070a1c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Google Sans","Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+#stars{position:fixed;inset:0;z-index:0}
+.blob{position:fixed;border-radius:50%;filter:blur(90px);opacity:.55;z-index:0;animation:drift 18s ease-in-out infinite alternate}
+.b1{width:48vmax;height:48vmax;background:#3b5bff;left:-15vmax;top:-15vmax}
+.b2{width:42vmax;height:42vmax;background:#9b4dff;right:-14vmax;top:20vh;animation-delay:-6s}
+.b3{width:38vmax;height:38vmax;background:#ff4f9a;left:20vw;bottom:-22vmax;animation-delay:-11s}
+@keyframes drift{to{transform:translate(6vmax,-5vmax) scale(1.15)}}
+header,main,footer{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:0 16px}
+header{display:flex;align-items:center;gap:8px;padding-top:14px;font-size:1.25rem;font-weight:500}
+.spark{width:22px;height:22px;flex:none;background:var(--g);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)}
+main{flex:1;overflow-y:auto;padding-bottom:10px}
+.hello{margin-top:30vh}
+.hello h1{font-size:clamp(2rem,7vw,3.2rem);margin:0;font-weight:500;background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hello h2{font-size:clamp(1.5rem,5.5vw,2.4rem);margin:4px 0 22px;font-weight:400;color:var(--dim)}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{background:var(--card);border:1px solid var(--line);color:var(--fg);padding:12px 16px;border-radius:16px;cursor:pointer;font-size:.9rem;backdrop-filter:blur(12px)}
+.chip:hover{border-color:#a56bff;box-shadow:0 0 16px rgba(165,107,255,.4)}
+.msg{display:flex;gap:10px;margin:16px 0;line-height:1.5;font-size:.95rem}
+.msg.u{justify-content:flex-end}
+.msg.u span{background:var(--card);border:1px solid var(--line);padding:10px 16px;border-radius:20px 20px 4px 20px;max-width:85%;white-space:pre-wrap;backdrop-filter:blur(12px)}
+.msg.p .spark{margin-top:2px}
+.msg.p span{white-space:pre-wrap;flex:1}
+.think .spark{animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+footer{padding-bottom:14px}
+.bar{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:30px;padding:6px 8px 6px 18px;backdrop-filter:blur(16px)}
+.bar input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--fg);font-size:1rem;padding:10px 0}
+.ib{width:42px;height:42px;border-radius:50%;border:0;cursor:pointer;background:transparent;color:var(--fg);font-size:1.2rem}
+.ib.send{background:var(--g);color:#fff}
+.ib.on{background:#ff4d6d}
+.foot{text-align:center;font-size:.7rem;color:var(--dim);margin-top:8px}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+<header><div class="spark"></div>Pattu</header>
+<main id="main">
+ <div class="hello" id="hello">
+    <div class="chips">
+   <div class="chip">Write a Python hello world</div>
+   <div class="chip">What time is it?</div>
+   <div class="chip">Explain what an API is</div>
+   <div class="chip">Calculate 12*8+5</div>
+  </div>
+ </div>
+ <div id="log"></div>
+</main>
+<footer>
+ <div class="bar"><input id="in" placeholder="Ask Pattu" autocomplete="off"><button class="ib" id="mic" title="Voice">🎤</button><button class="ib send" id="go" title="Send">➤</button></div>
+ <div class="foot">Pattu can make mistakes. Check important info.</div>
+</footer>
+<script>
+const $=id=>document.getElementById(id),log=$('log'),main=$('main');
+/* twinkling stars */
+const cv=$('stars'),cx=cv.getContext('2d');let st=[];
+function size(){cv.width=innerWidth;cv.height=innerHeight;st=Array.from({length:Math.floor(innerWidth*innerHeight/6000)},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*1.4+.3,p:Math.random()*6.28,s:Math.random()*.03+.01}))}
+size();addEventListener('resize',size);
+(function draw(){cx.clearRect(0,0,cv.width,cv.height);for(const s of st){s.p+=s.s;cx.globalAlpha=.35+.65*Math.abs(Math.sin(s.p));cx.fillStyle='#fff';cx.beginPath();cx.arc(s.x,s.y,s.r,0,6.28);cx.fill()}requestAnimationFrame(draw)})();
+/* chat */
+let hist=[];
+function add(t,c){$('hello').style.display='none';const d=document.createElement('div');d.className='msg '+c;
+ if(c==='p'){const s=document.createElement('div');s.className='spark';d.appendChild(s)}
+ const sp=document.createElement('span');sp.textContent=t;d.appendChild(sp);log.appendChild(d);main.scrollTop=main.scrollHeight;return d}
+function say(t){try{if(!window.speechSynthesis)return;speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(t.slice(0,300)))}catch(e){}}
+function local(q){
+ const s=q.toLowerCase();
+ if(/\btime\b/.test(s))return 'It is '+new Date().toLocaleTimeString()+'.';
+ if(/\b(date|today)\b/.test(s))return 'Today is '+new Date().toDateString()+'.';
+ const sites={youtube:'https://youtube.com',google:'https://google.com',github:'https://github.com',maps:'https://maps.google.com'};
+ if(/^(open|go to)\b/.test(s)){for(const k in sites)if(s.includes(k)){window.open(sites[k],'_blank');return 'Opening '+k+'.'}}
+ const m=s.match(/(?:calculate|calc|what is|what's)?\s*([\d.\s+\-*/()%^]+)$/);
+ if(m&&/\d\s*[+\-*/%^]\s*\d/.test(m[1])){try{return 'The answer is '+Function('"use strict";return ('+m[1].replace(/\^/g,'**')+')')()+'.'}catch(e){}}
+ return null;
+}
+async function ask(){
+ let sample=null;try{sample=await claude.use('sample')}catch(e){}
+ if(!sample)return "AI core is offline here. Full AI answers work only on the published claude.ai page. Offline I can do time, date, maths and open sites.";
+ const sys='You are Pattu, a friendly, smart AI assistant. Answer clearly and concisely. Help with coding, learning and daily questions.\n\nConversation:\n';
+ const r=await sample(sys+hist.slice(-8).map(x=>(x.role==='user'?'User: ':'Pattu: ')+x.content).join('\n')+'\nPattu:',{cache:false});
+ return r.text.trim();
+}
+async function send(text){
+ const q=(text||$('in').value).trim();if(!q)return;$('in').value='';add(q,'u');hist.push({role:'user',content:q});
+ let a=local(q);
+ if(!a){const t=add('Thinking…','p');t.classList.add('think');
+  try{a=await ask()}catch(e){a=e&&e.code==='not_granted'?'Permission to use my AI core was declined.':'Something went wrong. Please try again.'}
+  t.remove()}
+ hist.push({role:'assistant',content:a});add(a,'p');say(a);
+}
+$('go').onclick=()=>send();$('in').onkeydown=e=>{if(e.key==='Enter')send()};
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>send(c.textContent));
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR)$('mic').style.display='none';else{const r=new SR();r.lang='en-US';
+ r.onstart=()=>$('mic').classList.add('on');r.onend=()=>$('mic').classList.remove('on');
+ r.onresult=e=>send(e.results[0][0].transcript);$('mic').onclick=()=>{try{r.start()}catch(e){}}}
+</script>
+</body>
+</html>
